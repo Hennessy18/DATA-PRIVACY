@@ -1,0 +1,87 @@
+"""
+Practical 8 - Privacy Breach Response Plan
+Case study: MediTrack discovers that a misconfigured database exposed
+patient appointment records for a few days.
+
+Rather than just writing the plan as a document, this script "runs"
+an incident through the standard breach-response stages and prints
+out what should happen at each stage, along with a timer/deadline
+check for legal notification (72 hours is the common benchmark used
+in several data protection laws).
+"""
+
+from datetime import datetime, timedelta
+
+incident = {
+    "company": "MediTrack",
+    "discovered_at": datetime(2026, 9, 20, 10, 0),
+    "records_exposed": 4200,
+    "data_types": ["Name", "Phone number", "Appointment history"],
+    "cause": "Misconfigured cloud storage bucket left publicly accessible",
+}
+
+response_stages = [
+    "1. Contain - Immediately restrict access to the exposed database/bucket",
+    "2. Assess - Determine what data and how many records were exposed",
+    "3. Notify Internally - Inform security team, management and legal/DPO",
+    "4. Notify Regulator - File a breach report with the data protection authority",
+    "5. Notify Affected Users - Send a clear notice explaining what happened and what to do",
+    "6. Remediate - Patch the misconfiguration and review similar systems",
+    "7. Review - Conduct a post-incident review and update the security policy",
+]
+
+
+def check_notification_deadline(discovered_at: datetime, deadline_hours: int = 72):
+    deadline = discovered_at + timedelta(hours=deadline_hours)
+    now = datetime.now()
+
+    remaining = deadline - now
+    print(f"Incident discovered at : {discovered_at}")
+    print(f"Notification deadline  : {deadline} (within {deadline_hours} hours)")
+
+    if remaining.total_seconds() > 0:
+        hours_left = round(remaining.total_seconds() / 3600, 1)
+        print(f"-> Still within deadline, {hours_left} hours remaining")
+    else:
+        print("-> DEADLINE MISSED - this itself may be reportable as a compliance failure")
+
+
+def draft_user_notification(incident):
+    template = f"""
+Subject: Important notice about your {incident['company']} account
+
+Dear User,
+
+We are writing to inform you of a data security incident that may have
+affected your personal information. On investigation, we found that the
+following data types may have been exposed: {", ".join(incident['data_types'])}.
+
+Cause: {incident['cause']}
+Approximate number of users affected: {incident['records_exposed']}
+
+We have already secured the affected system and are working with security
+experts to prevent this from happening again. As a precaution, we recommend
+you remain alert to any unusual messages or calls referencing your appointments.
+
+We sincerely apologise for this incident.
+
+{incident['company']} Security Team
+"""
+    return template.strip()
+
+
+def run_incident_simulation(incident, stages):
+    print(f"Breach Response Simulation - {incident['company']}")
+    print("=" * 60)
+    for stage in stages:
+        print(stage)
+    print("=" * 60)
+
+    check_notification_deadline(incident["discovered_at"])
+    print()
+    print("Draft user notification:")
+    print(draft_user_notification(incident))
+
+
+if __name__ == "__main__":
+    run_incident_simulation(incident, response_stages)
