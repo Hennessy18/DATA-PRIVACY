@@ -1,0 +1,68 @@
+"""
+Practical 7 - Privacy-Enhancing Technologies (PETs)
+Instead of just describing VPNs/Tor/Signal in text, we score them against
+a few practical criteria so we can back up the comparison with numbers.
+
+Scores are out of 5 and are based on commonly known, publicly documented
+characteristics of each technology (not measured live, since that would
+need actual network testing).
+"""
+
+pets = {
+    "VPN": {
+        "anonymity_from_websites": 3,   # website sees VPN's IP, not yours, but VPN provider sees you
+        "anonymity_from_provider": 1,   # the VPN company can usually see your traffic
+        "speed": 4,
+        "ease_of_use": 5,
+        "typical_use_case": "Hiding your IP/location from websites, bypassing geo-blocks",
+    },
+    "Tor": {
+        "anonymity_from_websites": 5,   # traffic bounces through 3 relays, very hard to trace
+        "anonymity_from_provider": 5,   # no single relay knows both who you are and what you're visiting
+        "speed": 2,                     # multiple relay hops slow things down
+        "ease_of_use": 3,
+        "typical_use_case": "Strong anonymity for sensitive browsing, journalists, activists",
+    },
+    "Signal (secure messaging)": {
+        "anonymity_from_websites": 4,   # not browsing-related, but metadata is minimised
+        "anonymity_from_provider": 4,   # end-to-end encrypted, Signal itself can't read messages
+        "speed": 5,
+        "ease_of_use": 5,
+        "typical_use_case": "Private, end-to-end encrypted personal/team communication",
+    },
+}
+
+
+def evaluate_pets(pet_dict):
+    print("Privacy-Enhancing Technology Evaluation")
+    print("-" * 60)
+
+    for name, scores in pet_dict.items():
+        numeric_scores = {k: v for k, v in scores.items() if isinstance(v, int)}
+        avg = round(sum(numeric_scores.values()) / len(numeric_scores), 2)
+
+        print(f"{name}")
+        for criterion, value in numeric_scores.items():
+            print(f"   {criterion.replace('_', ' '):<28}: {value}/5")
+        print(f"   Average score               : {avg}/5")
+        print(f"   Best suited for             : {scores['typical_use_case']}")
+        print()
+
+
+def recommend_for_scenario(scenario: str):
+    scenario = scenario.lower()
+    if "journalist" in scenario or "anonymous" in scenario or "hide identity" in scenario:
+        return "Tor - because anonymity from the network itself matters more than speed here"
+    elif "chat" in scenario or "team" in scenario or "message" in scenario:
+        return "Signal - end-to-end encryption with good usability for everyday communication"
+    else:
+        return "VPN - good general-purpose option for hiding your IP from websites you visit"
+
+
+if __name__ == "__main__":
+    evaluate_pets(pets)
+
+    print("Scenario-based recommendation:")
+    scenario = "A journalist needs to research a sensitive story without being tracked"
+    print(f" Scenario: {scenario}")
+    print(f" Recommendation: {recommend_for_scenario(scenario)}")
