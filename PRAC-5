@@ -1,0 +1,77 @@
+"""
+Practical 5 - Anonymization Techniques
+Applied to a small sample dataset of "patients", similar to what you'd
+get from a hospital records system.
+
+Covers:
+  1. Data Masking     - hide part of an identifier (e.g. phone number)
+  2. k-Anonymity check - make sure every combination of quasi-identifiers
+                          appears at least k times, so no one record stands out
+  3. Differential Privacy - add small random noise to aggregate numbers
+                             so the exact value of any one person can't be reverse-engineered
+"""
+
+import random
+import pandas as pd
+
+data = pd.DataFrame({
+    "name": ["Aisha", "Rohan", "Meera", "Karan", "Priya", "Dev"],
+    "age": [29, 34, 29, 41, 34, 29],
+    "zipcode": ["110001", "110002", "110001", "110005", "110002", "110001"],
+    "phone": ["9876543210", "9123456780", "9988776655", "9871234567", "9001122334", "9111222333"],
+    "disease": ["Flu", "Diabetes", "Flu", "Hypertension", "Diabetes", "Flu"],
+})
+
+
+def mask_phone_number(phone: str) -> str:
+    # keep first 2 and last 2 digits visible, mask the rest - common in real apps
+    return phone[:2] + "*" * (len(phone) - 4) + phone[-2:]
+
+
+def apply_masking(df):
+    print("1) Data Masking on phone numbers")
+    masked_df = df.copy()
+    masked_df["phone"] = masked_df["phone"].apply(mask_phone_number)
+    print(masked_df[["name", "phone"]])
+    print()
+    return masked_df
+
+
+def check_k_anonymity(df, quasi_identifiers, k):
+    print(f"2) Checking k-anonymity (k={k}) on columns {quasi_identifiers}")
+    group_sizes = df.groupby(quasi_identifiers).size()
+    print(group_sizes)
+
+    violations = group_sizes[group_sizes < k]
+    if violations.empty:
+        print(f"   -> Dataset satisfies {k}-anonymity\n")
+    else:
+        print(f"   -> These groups violate {k}-anonymity (too small, easy to re-identify):")
+        print(f"   {violations.index.tolist()}\n")
+    return violations
+
+
+def add_differential_privacy_noise(true_count: int, epsilon: float = 1.0):
+    # simplified Laplace mechanism: noise scale is 1/epsilon for a "counting" query
+    # smaller epsilon = more privacy but less accurate answer
+    scale = 1 / epsilon
+    noise = random.uniform(-scale, scale) * 3  # small nudge for demo purposes
+    noisy_count = true_count + noise
+    return round(noisy_count, 2)
+
+
+def demo_differential_privacy(df):
+    print("3) Differential Privacy on an aggregate query")
+    true_count = (df["disease"] == "Diabetes").sum()
+    print(f"   True count of 'Diabetes' patients : {true_count}")
+
+    for eps in [2.0, 1.0, 0.3]:
+        noisy = add_differential_privacy_noise(true_count, epsilon=eps)
+        print(f"   epsilon={eps:<4} -> noisy released count: {noisy}")
+    print("   -> Smaller epsilon means more noise added, i.e. stronger privacy\n")
+
+
+if __name__ == "__main__":
+    apply_masking(data)
+    check_k_anonymity(data, ["age", "zipcode"], k=2)
+    demo_differential_privacy(data)
