@@ -1,0 +1,76 @@
+"""
+Practical 2 - Privacy Impact Assessment (PIA)
+Case study: MediTrack, a new mobile app being built to let patients book
+appointments and store basic health records.
+
+A PIA usually asks a set of standard questions about a new system BEFORE
+it is launched, so risks can be fixed early instead of after a breach.
+Here we model that as a simple scoring questionnaire with mitigation
+suggestions attached to each risky answer.
+"""
+
+pia_questions = [
+    {
+        "question": "Does the app collect health data (a special category of personal data)?",
+        "answer": True,
+        "risk_if_true": "High - health data needs stronger legal basis and security",
+        "mitigation": "Use explicit consent, encrypt health records field-by-field",
+    },
+    {
+        "question": "Will data be shared with any third-party analytics or ad company?",
+        "answer": True,
+        "risk_if_true": "High - increases exposure and reduces control over data",
+        "mitigation": "Remove third-party trackers from health-record screens, use anonymised analytics only",
+    },
+    {
+        "question": "Is the data stored only within one country (no cross-border transfer)?",
+        "answer": False,
+        "risk_if_true": "Medium - cross-border transfer may need extra legal safeguards",
+        "mitigation": "Use data residency options offered by cloud provider, sign standard contractual clauses",
+    },
+    {
+        "question": "Can a user permanently delete their account and data?",
+        "answer": False,
+        "risk_if_true": "High - violates the right to erasure",
+        "mitigation": "Add an account deletion feature with a 30-day grace period",
+    },
+    {
+        "question": "Is access to the admin dashboard logged and monitored?",
+        "answer": True,
+        "risk_if_true": None,  # this one is a good practice already in place, no risk to flag
+        "mitigation": None,
+    },
+]
+
+
+def run_pia(project_name, questions):
+    print(f"Privacy Impact Assessment - {project_name}")
+    print("=" * 55)
+
+    flagged_risks = []
+
+    for i, q in enumerate(questions, start=1):
+        print(f"Q{i}: {q['question']}")
+        print(f"    Answer: {q['answer']}")
+
+        # a risk only gets flagged when the "answer" matches the condition
+        # that we defined as risky for that particular question
+        if q["answer"] and q["risk_if_true"]:
+            print(f"    -> Risk noted: {q['risk_if_true']}")
+            flagged_risks.append(q)
+        elif not q["answer"] and q["mitigation"] and q["risk_if_true"]:
+            print(f"    -> Risk noted: {q['risk_if_true']}")
+            flagged_risks.append(q)
+        else:
+            print("    -> No major risk identified")
+        print()
+
+    print("Summary of mitigations needed:")
+    for r in flagged_risks:
+        print(f" - {r['mitigation']}")
+
+    print(f"\nTotal risks flagged: {len(flagged_risks)} out of {len(questions)} questions")
+
+
+if __name__ == "__main__":
+    run_pia("MediTrack Patient App", pia_questions)
