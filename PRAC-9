@@ -1,0 +1,78 @@
+"""
+Practical 9 - Ethical Considerations in Data Privacy
+This one is less about pure code and more about reasoning, so the
+"code" here models it as a small scenario evaluator: for each ethical
+dilemma we list the two competing values, weigh some factors, and
+print out a suggested stance with a justification, so it can support
+a written discussion rather than replace it.
+"""
+
+scenarios = [
+    {
+        "title": "Government surveillance for public safety",
+        "value_a": "Privacy",
+        "value_b": "Security",
+        "factors": {
+            "how many people affected": 8,       # large scale = more weight to privacy concerns
+            "proportionality of data collected": 6,
+            "oversight/accountability in place": 4,  # low oversight = lean toward privacy
+        },
+    },
+    {
+        "title": "Facial recognition used by police in marginalised neighbourhoods",
+        "value_a": "Privacy / fairness",
+        "value_b": "Crime prevention",
+        "factors": {
+            "how many people affected": 9,
+            "proportionality of data collected": 3,   # broad, unconsented scanning of public
+            "oversight/accountability in place": 2,
+        },
+    },
+    {
+        "title": "Hospital sharing anonymised patient data with a university for research",
+        "value_a": "Individual privacy",
+        "value_b": "Public health benefit",
+        "factors": {
+            "how many people affected": 5,
+            "proportionality of data collected": 8,   # data is anonymised, purpose-specific
+            "oversight/accountability in place": 8,
+        },
+    },
+]
+
+
+def evaluate_scenario(scenario):
+    factors = scenario["factors"]
+    avg_score = sum(factors.values()) / len(factors)
+
+    # a rough, simplified heuristic: low average factor score => favour privacy,
+    # high average => the competing value (security/benefit) has stronger grounds
+    # this is meant to START a discussion, not end one
+    if avg_score <= 4:
+        stance = f"Leans toward protecting {scenario['value_a']}"
+    elif avg_score <= 6.5:
+        stance = "Balanced - needs case-by-case safeguards, no clean winner"
+    else:
+        stance = f"Leans toward allowing {scenario['value_b']}, WITH strict safeguards"
+
+    return avg_score, stance
+
+
+def print_ethics_analysis(scenarios):
+    print("Ethical Considerations in Data Privacy - Scenario Analysis")
+    print("=" * 65)
+
+    for s in scenarios:
+        print(f"Scenario: {s['title']}")
+        print(f" Competing values: {s['value_a']}  vs  {s['value_b']}")
+        for factor, score in s["factors"].items():
+            print(f"   - {factor}: {score}/10")
+
+        avg, stance = evaluate_scenario(s)
+        print(f" Average weighting factor: {round(avg, 2)}/10")
+        print(f" Suggested stance: {stance}")
+        print("-" * 65)
+
+
+if __name__ == "__main__":
+    print_ethics_analysis(scenarios)
