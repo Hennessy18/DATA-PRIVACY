@@ -1,0 +1,70 @@
+"""
+Practical 6 - Privacy Policy Analysis
+Compares two SAMPLE privacy policy excerpts (written for this practical,
+not copied from any real company) against a checklist of things a good
+privacy policy should mention, and flags what's missing.
+"""
+
+# these are short, original excerpts written for the assignment - NOT quoted
+# from any real company's actual policy
+policy_company_a = """
+We collect your name, email and browsing activity when you use our website.
+This data is used to improve our services and personalize recommendations.
+We may share data with trusted partners for marketing purposes.
+"""
+
+policy_company_b = """
+We collect your name, email, location and payment details when you use our app.
+Data is stored securely using encryption and is retained for 5 years.
+You have the right to request deletion of your data at any time by emailing privacy@example.com.
+We do not sell your data to third parties. In case of a data breach, we notify
+affected users within 72 hours as required by applicable law.
+"""
+
+# keywords we expect a "good" privacy policy to mention, mapped to a plain
+# explanation of why each one matters
+checklist_keywords = {
+    "delet": "Right to deletion / erasure",
+    "encrypt": "Security measures (encryption)",
+    "third part": "Third-party data sharing disclosure",
+    "retain": "Data retention period",
+    "breach": "Breach notification process",
+    "right": "User rights section",
+}
+
+
+def analyze_policy(company_name, policy_text, checklist):
+    print(f"Analyzing privacy policy: {company_name}")
+    text_lower = policy_text.lower()
+
+    found = []
+    missing = []
+
+    for keyword, meaning in checklist.items():
+        if keyword in text_lower:
+            found.append(meaning)
+        else:
+            missing.append(meaning)
+
+    print(f" Found ({len(found)}):")
+    for item in found:
+        print(f"   [OK] {item}")
+
+    print(f" Missing ({len(missing)}):")
+    for item in missing:
+        print(f"   [GAP] {item}")
+
+    score = round(len(found) / len(checklist) * 100, 1)
+    print(f" Completeness score: {score}%\n")
+    return score
+
+
+if __name__ == "__main__":
+    score_a = analyze_policy("Company A", policy_company_a, checklist_keywords)
+    score_b = analyze_policy("Company B", policy_company_b, checklist_keywords)
+
+    print("Comparison:")
+    print(f" Company A: {score_a}%")
+    print(f" Company B: {score_b}%")
+    better = "Company A" if score_a > score_b else "Company B"
+    print(f" -> {better} has the more complete privacy policy")
