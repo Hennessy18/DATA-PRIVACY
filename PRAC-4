@@ -1,0 +1,77 @@
+"""
+Practical 4 - Cryptography
+Demonstrates the three techniques most privacy courses expect:
+  1. Hashing        (SHA-256) - for storing passwords safely
+  2. Symmetric Encryption (Fernet/AES) - for protecting stored files
+  3. Digital Signatures (RSA)  - for proving a message wasn't tampered with
+
+Uses the 'cryptography' library, which is the standard, well-tested
+package for this kind of thing (don't hand-roll your own crypto in
+real projects).
+"""
+
+import hashlib
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import hashes
+
+
+def demo_hashing(password: str):
+    print("1) Hashing a password with SHA-256")
+    # a real system would also add a random "salt" before hashing,
+    # shown here in a simplified way
+    salt = "s0meRandomSalt"
+    hashed = hashlib.sha256((salt + password).encode()).hexdigest()
+    print(f"   Original password : {password}")
+    print(f"   Stored hash        : {hashed}")
+    print("   -> Even if the database leaks, the real password is not exposed\n")
+    return hashed
+
+
+def demo_symmetric_encryption(message: str):
+    print("2) Symmetric encryption (Fernet, which uses AES under the hood)")
+    key = Fernet.generate_key()
+    cipher = Fernet(key)
+
+    encrypted = cipher.encrypt(message.encode())
+    decrypted = cipher.decrypt(encrypted).decode()
+
+    print(f"   Key (keep this secret!) : {key.decode()}")
+    print(f"   Encrypted message        : {encrypted.decode()[:60]}...")
+    print(f"   Decrypted back           : {decrypted}\n")
+    return encrypted, key
+
+
+def demo_digital_signature(message: str):
+    print("3) Digital signature (RSA) - proves the message is authentic")
+    # in real life the private key stays with the sender only
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    public_key = private_key.public_key()
+
+    signature = private_key.sign(
+        message.encode(),
+        padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+        hashes.SHA256(),
+    )
+
+    # anyone with the public key can verify, but nobody but the sender could have signed it
+    try:
+        public_key.verify(
+            signature,
+            message.encode(),
+            padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+            hashes.SHA256(),
+        )
+        verified = True
+    except Exception:
+        verified = False
+
+    print(f"   Message signed  : {message}")
+    print(f"   Signature valid : {verified}\n")
+    return verified
+
+
+if __name__ == "__main__":
+    demo_hashing("MySecretPassword123")
+    demo_symmetric_encryption("Customer record: Rohan Sharma, DOB 1998-05-12")
+    demo_digital_signature("This invoice total is Rs. 4599 and has not been altered")
