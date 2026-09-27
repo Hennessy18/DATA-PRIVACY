@@ -1,0 +1,66 @@
+"""
+Practical 3 - Regulation Compliance
+Case study: Sunrise Retail Pvt Ltd checking itself against a simplified
+set of GDPR-style requirements before expanding to European customers.
+
+Real compliance checks are usually done with long spreadsheets - this is
+a simplified, code version of the same idea: go through requirements,
+mark compliant/partial/non-compliant, and generate an action plan.
+"""
+
+from enum import Enum
+
+
+class Status(Enum):
+    COMPLIANT = "Compliant"
+    PARTIAL = "Partially Compliant"
+    NON_COMPLIANT = "Non-Compliant"
+
+
+# a small slice of GDPR-style principles, simplified for this practical
+gdpr_requirements = {
+    "Lawfulness & Consent": Status.COMPLIANT,
+    "Purpose Limitation": Status.PARTIAL,
+    "Data Minimisation": Status.NON_COMPLIANT,
+    "Right to Access": Status.COMPLIANT,
+    "Right to Erasure": Status.NON_COMPLIANT,
+    "Data Portability": Status.PARTIAL,
+    "Breach Notification (72 hrs)": Status.NON_COMPLIANT,
+    "Data Protection Officer Appointed": Status.PARTIAL,
+}
+
+action_plan_map = {
+    "Purpose Limitation": "Document exactly why each data field is collected, stop reuse for unrelated purposes",
+    "Data Minimisation": "Audit forms and remove fields not strictly necessary (e.g. asking DOB when not needed)",
+    "Right to Erasure": "Build a 'delete my account' request workflow with a defined SLA",
+    "Data Portability": "Add an export feature (JSON/CSV) for a user's own data",
+    "Breach Notification (72 hrs)": "Create an incident response runbook with a 72-hour notification clock",
+    "Data Protection Officer Appointed": "Formally assign and document a DPO, even if it's a part-time role initially",
+}
+
+
+def compliance_score(requirements):
+    points = {Status.COMPLIANT: 1, Status.PARTIAL: 0.5, Status.NON_COMPLIANT: 0}
+    total = sum(points[s] for s in requirements.values())
+    return round((total / len(requirements)) * 100, 1)
+
+
+def generate_report(company, requirements, action_plan):
+    print(f"Regulation Compliance Report - {company}")
+    print("-" * 55)
+
+    for requirement, status in requirements.items():
+        print(f"{requirement:<35} : {status.value}")
+
+    score = compliance_score(requirements)
+    print("-" * 55)
+    print(f"Overall compliance score: {score}%")
+
+    print("\nAction plan for gaps:")
+    for requirement, status in requirements.items():
+        if status != Status.COMPLIANT and requirement in action_plan:
+            print(f" - [{status.value}] {requirement}: {action_plan[requirement]}")
+
+
+if __name__ == "__main__":
+    generate_report("Sunrise Retail Pvt Ltd", gdpr_requirements, action_plan_map)
